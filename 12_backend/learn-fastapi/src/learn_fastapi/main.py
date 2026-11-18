@@ -1,8 +1,11 @@
-from fastapi import FastAPI  
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI , Request 
+# from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
-
+templates = Jinja2Templates(directory="src/learn_fastapi/templates")
+app.mount("/static", StaticFiles(directory="src/learn_fastapi/static"), name="static")
 
 posts: list[dict] = [
     {
@@ -21,9 +24,9 @@ posts: list[dict] = [
     },
 ]
 
-@app.get("/", response_class=HTMLResponse, include_in_schema=False)
-def home():
-    return f"<h1>Welcome to the FastAPI Blog!</h1><p>There are currently {len(posts)} posts available.</p>"
+@app.get("/",  include_in_schema=False, name="home")
+def home(request: Request):
+    return templates.TemplateResponse(request, "home.html", {"posts": posts, "title": "Home"},)
 
 @app.get("/posts")
 def get_posts():
